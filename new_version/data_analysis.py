@@ -68,11 +68,13 @@ print("shape of data: ", filtered_by_FG_2019_and_2020.shape)
 
 # xlabel = 'eFG%_totals_2019'
 # ylabel = 'TS%_2019'
-xlabel = 'USG%_2020'
-ylabel = 'OWS_2020'
+xlabel = 'TS%_2019'
+ylabel = 'TS%_2020'
 
 
-model = sm.OLS(filtered_by_FG_2019_and_2020[ylabel], sm.add_constant(np.column_stack((filtered_by_FG_2019_and_2020['3PAr_2019'], filtered_by_FG_2019_and_2020['FTr_2019'], filtered_by_FG_2019_and_2020['2P%_totals_2019'], filtered_by_FG_2019_and_2020['FT%_totals_2019']))))
+# model = sm.OLS(filtered_by_FG_2019_and_2020[ylabel], sm.add_constant(np.column_stack((filtered_by_FG_2019_and_2020['3PAr_2019'], filtered_by_FG_2019_and_2020['FTr_2019'], filtered_by_FG_2019_and_2020['2P%_totals_2019'], filtered_by_FG_2019_and_2020['FT%_totals_2019'], filtered_by_FG_2019_and_2020['TS%_2019']))))
+model = sm.OLS(filtered_by_FG_2019_and_2020[ylabel], sm.add_constant(np.column_stack((filtered_by_FG_2019_and_2020['3PAr_2019'], filtered_by_FG_2019_and_2020['FTr_2019'], filtered_by_FG_2019_and_2020['TS%_2019']))))
+model = sm.OLS(filtered_by_FG_2019_and_2020[ylabel], sm.add_constant(np.column_stack((filtered_by_FG_2019_and_2020['3PAr_2019'], filtered_by_FG_2019_and_2020['FTr_2019'], filtered_by_FG_2019_and_2020['2P%_totals_2019'], filtered_by_FG_2019_and_2020['3P%_totals_2019'], filtered_by_FG_2019_and_2020['FT%_totals_2019'], filtered_by_FG_2019_and_2020['TS%_2019']))))
 results = model.fit()
 print(results.summary())
 
