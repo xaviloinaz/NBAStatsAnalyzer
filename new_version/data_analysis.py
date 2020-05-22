@@ -5,13 +5,13 @@ import os
 import matplotlib.pyplot as plt
 import scipy
 import statsmodels.api as sm
+from statsmodels.tools.eval_measures import rmse
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
 print("Current directory:")
 print(os.getcwd())
 os.chdir(os.path.expanduser("~"))
 print(os.getcwd())
-
 
 years = list(range(1980,2021))
 years_stats_dict = {}
@@ -68,53 +68,19 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
     return filtered_by_FG
 
 
-#
-# merged_2019_and_2020 = years_stats_dict[2019].merge(years_stats_dict[2020], left_on='playerID', right_on='playerID',
-#           suffixes=('_2019', '_2020'))
-#
-# filtered_empties_2019_and_2020 = merged_2019_and_2020[merged_2019_and_2020.FGA_totals_2019 != str(0)]
-# filtered_empties_2019_and_2020 = filtered_empties_2019_and_2020[filtered_empties_2019_and_2020.FGA_totals_2020 != str(0)]
-# filtered_empties_2019_and_2020 = filtered_empties_2019_and_2020[filtered_empties_2019_and_2020.FTA_totals_2019 != str(0)]
-# filtered_empties_2019_and_2020 = filtered_empties_2019_and_2020[filtered_empties_2019_and_2020.FTA_totals_2020 != str(0)]
-#
-# filtered_empties_2019_and_2020['FG_totals_2019'] = filtered_empties_2019_and_2020['FG_totals_2019'].astype(float)
-# filtered_empties_2019_and_2020['FG_totals_2020'] = filtered_empties_2019_and_2020['FG_totals_2020'].astype(float)
-# filtered_empties_2019_and_2020['TS%_2019'] = filtered_empties_2019_and_2020['TS%_2019'].astype(float)
-# filtered_empties_2019_and_2020['TS%_2020'] = filtered_empties_2019_and_2020['TS%_2020'].astype(float)
-# filtered_empties_2019_and_2020['FG%_totals_2019'] = filtered_empties_2019_and_2020['FG%_totals_2019'].astype(float)
-# filtered_empties_2019_and_2020['FG%_totals_2020'] = filtered_empties_2019_and_2020['FG%_totals_2020'].astype(float)
-# # filtered_empties_2019_and_2020['3P%_totals_2019'] = filtered_empties_2019_and_2020['3P%_totals_2019'].astype(float)
-# # filtered_empties_2019_and_2020['3P%_totals_2020'] = filtered_empties_2019_and_2020['3P%_totals_2020'].astype(float)
-# filtered_empties_2019_and_2020['2P%_totals_2019'] = filtered_empties_2019_and_2020['2P%_totals_2019'].astype(float)
-# filtered_empties_2019_and_2020['2P%_totals_2020'] = filtered_empties_2019_and_2020['2P%_totals_2020'].astype(float)
-# filtered_empties_2019_and_2020['FT%_totals_2019'] = filtered_empties_2019_and_2020['FT%_totals_2019'].astype(float)
-# filtered_empties_2019_and_2020['FT%_totals_2020'] = filtered_empties_2019_and_2020['FT%_totals_2020'].astype(float)
-# filtered_empties_2019_and_2020['3PAr_2019'] = filtered_empties_2019_and_2020['3PAr_2019'].astype(float)
-# filtered_empties_2019_and_2020['3PAr_2020'] = filtered_empties_2019_and_2020['3PAr_2020'].astype(float)
-# filtered_empties_2019_and_2020['FTr_2019'] = filtered_empties_2019_and_2020['FTr_2019'].astype(float)
-# filtered_empties_2019_and_2020['FTr_2020'] = filtered_empties_2019_and_2020['FTr_2020'].astype(float)
-# filtered_empties_2019_and_2020['USG%_2019'] = filtered_empties_2019_and_2020['USG%_2019'].astype(float)
-# filtered_empties_2019_and_2020['USG%_2020'] = filtered_empties_2019_and_2020['USG%_2020'].astype(float)
-# filtered_empties_2019_and_2020['eFG%_totals_2019'] = filtered_empties_2019_and_2020['eFG%_totals_2019'].astype(float)
-# filtered_empties_2019_and_2020['eFG%_totals_2020'] = filtered_empties_2019_and_2020['eFG%_totals_2020'].astype(float)
-# filtered_empties_2019_and_2020['WS/48_2019'] = filtered_empties_2019_and_2020['WS/48_2019'].astype(float)
-# filtered_empties_2019_and_2020['WS/48_2020'] = filtered_empties_2019_and_2020['WS/48_2020'].astype(float)
-# filtered_empties_2019_and_2020['OWS_2019'] = filtered_empties_2019_and_2020['OWS_2019'].astype(float)
-# filtered_empties_2019_and_2020['OWS_2020'] = filtered_empties_2019_and_2020['OWS_2020'].astype(float)
-#
-#
-# filtered_by_FG_2019_and_2020 = filtered_empties_2019_and_2020[filtered_empties_2019_and_2020.FG_totals_2019 >= 200]
-# filtered_by_FG_2019_and_2020 = filtered_by_FG_2019_and_2020[filtered_by_FG_2019_and_2020.FG_totals_2020 >= 150]
-
-
 year1 = 2018
 year2 = 2019
 processed_merged_data = merged_years_setup(year1, year2, 200, 200)
 
+test_year_1 = 2019
+test_year_2 = 2020
+processed_merged_data_test = merged_years_setup(test_year_1, test_year_2, 200, 150)
+
 print(processed_merged_data.head(10))
 print("shape of data: ", processed_merged_data.shape)
+print("Number of players: ", processed_merged_data.shape[0])
+print("Number of attributes: ", processed_merged_data.shape[1])
 
-# xlabel = 'FT%_totals_' + str(year2)
 xlabel = 'TS%_' + str(year1)
 ylabel = 'TS%_' + str(year2)
 
@@ -123,7 +89,13 @@ ylabel = 'TS%_' + str(year2)
 # model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['FT%_totals_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
 model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TRB_per_100_poss_' + str(year1)], processed_merged_data['AST_per_100_poss_' + str(year1)], processed_merged_data['STL_per_100_poss_' + str(year1)], processed_merged_data['BLK_per_100_poss_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
 results = model.fit()
+print("Summary:")
 print(results.summary())
+
+predictions_for_train = results.predict(sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TRB_per_100_poss_' + str(year1)], processed_merged_data['AST_per_100_poss_' + str(year1)], processed_merged_data['STL_per_100_poss_' + str(year1)], processed_merged_data['BLK_per_100_poss_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
+predictions_for_test = results.predict(sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TRB_per_100_poss_' + str(test_year_1)], processed_merged_data_test['AST_per_100_poss_' + str(test_year_1)], processed_merged_data_test['STL_per_100_poss_' + str(test_year_1)], processed_merged_data_test['BLK_per_100_poss_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)]))))
+print("RMSE for training data:", rmse(processed_merged_data['TS%_' + str(year2)], predictions_for_train))
+print("RMSE for testing data:", rmse(processed_merged_data_test['TS%_' + str(test_year_2)], predictions_for_test))
 
 slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(processed_merged_data[xlabel], processed_merged_data[ylabel])
 print("r_value: ", r_value)
