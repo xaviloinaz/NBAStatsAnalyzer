@@ -36,13 +36,13 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
     filtered_empties = filtered_empties[filtered_empties["2PA_totals_" + str(year1)] != str(0)]
     filtered_empties = filtered_empties[filtered_empties["2PA_totals_" + str(year2)] != str(0)]
 
-    # Useful for debugging purposes:
-    i = 0
-    for col_name in filtered_empties.columns:
-        print(str(i) + ":")
-        print(col_name)
-        i += 1
-    print(filtered_empties.head(10))
+    # # Useful for debugging purposes:
+    # i = 0
+    # for col_name in filtered_empties.columns:
+    #     print(str(i) + ":")
+    #     print(col_name)
+    #     i += 1
+    # print(filtered_empties.head(10))
 
     filtered_empties[filtered_empties.columns[0:6]] = filtered_empties[filtered_empties.columns[0:6]].astype(float)
     filtered_empties[filtered_empties.columns[7:29]] = filtered_empties[filtered_empties.columns[7:29]].astype(float)
@@ -107,18 +107,21 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
 # filtered_by_FG_2019_and_2020 = filtered_by_FG_2019_and_2020[filtered_by_FG_2019_and_2020.FG_totals_2020 >= 150]
 
 
-year1 = 2001
-year2 = 2002
+year1 = 2018
+year2 = 2019
 processed_merged_data = merged_years_setup(year1, year2, 200, 200)
 
 print(processed_merged_data.head(10))
 print("shape of data: ", processed_merged_data.shape)
 
+# xlabel = 'FT%_totals_' + str(year2)
 xlabel = 'TS%_' + str(year1)
 ylabel = 'TS%_' + str(year2)
 
-# model = sm.OLS(processed_merged_data[ylabel], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['2P%_totals_' + str(year1)], processed_merged_data['FT%_totals_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
-model = sm.OLS(processed_merged_data[ylabel], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
+# model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['2P%_totals_' + str(year1)], processed_merged_data['FT%_totals_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
+# model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
+# model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['FT%_totals_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
+model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TRB_per_100_poss_' + str(year1)], processed_merged_data['AST_per_100_poss_' + str(year1)], processed_merged_data['STL_per_100_poss_' + str(year1)], processed_merged_data['BLK_per_100_poss_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
 results = model.fit()
 print(results.summary())
 
