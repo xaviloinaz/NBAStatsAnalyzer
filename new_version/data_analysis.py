@@ -25,7 +25,6 @@ pd.options.display.width=None
 
 
 
-
 def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input years are ints
     merged = years_stats_dict[year1].merge(years_stats_dict[year2], left_on='playerID', right_on='playerID',
           suffixes=('_' + str(year1), '_' + str(year2)))
@@ -68,41 +67,48 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
     return filtered_by_FG
 
 
-year1 = 2018
-year2 = 2019
-processed_merged_data = merged_years_setup(year1, year2, 200, 200)
+year1 = 2016
+year2 = 2017
+processed_merged_data_train = merged_years_setup(year1, year2, 200, 200)
 
 test_year_1 = 2019
 test_year_2 = 2020
 processed_merged_data_test = merged_years_setup(test_year_1, test_year_2, 200, 150)
 
-print(processed_merged_data.head(10))
-print("shape of data: ", processed_merged_data.shape)
-print("Number of players: ", processed_merged_data.shape[0])
-print("Number of attributes: ", processed_merged_data.shape[1])
+print(processed_merged_data_train.head(10))
+print("shape of data: ", processed_merged_data_train.shape)
+print("Number of players: ", processed_merged_data_train.shape[0])
+print("Number of attributes: ", processed_merged_data_train.shape[1])
 
 xlabel = 'TS%_' + str(year1)
 ylabel = 'TS%_' + str(year2)
 
-# model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['2P%_totals_' + str(year1)], processed_merged_data['FT%_totals_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
-# model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
-# model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['FT%_totals_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
-model = sm.OLS(processed_merged_data['TS%_' + str(year2)], sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TRB_per_100_poss_' + str(year1)], processed_merged_data['AST_per_100_poss_' + str(year1)], processed_merged_data['STL_per_100_poss_' + str(year1)], processed_merged_data['BLK_per_100_poss_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
+# explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['2P%_totals_' + str(year1)], processed_merged_data_train['FT%_totals_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+# explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['FT%_totals_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+
+# explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+# explanatory_variables_test = sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)])))
+explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['TRB_per_100_poss_' + str(year1)], processed_merged_data_train['AST_per_100_poss_' + str(year1)], processed_merged_data_train['STL_per_100_poss_' + str(year1)], processed_merged_data_train['BLK_per_100_poss_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+explanatory_variables_test = sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TRB_per_100_poss_' + str(test_year_1)], processed_merged_data_test['AST_per_100_poss_' + str(test_year_1)], processed_merged_data_test['STL_per_100_poss_' + str(test_year_1)], processed_merged_data_test['BLK_per_100_poss_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)])))
+
+model = sm.OLS(processed_merged_data_train['TS%_' + str(year2)], explanatory_variables_train)
 results = model.fit()
 print("Summary:")
 print(results.summary())
 
-predictions_for_train = results.predict(sm.add_constant(np.column_stack((processed_merged_data['3PAr_' + str(year1)], processed_merged_data['FTr_' + str(year1)], processed_merged_data['TRB_per_100_poss_' + str(year1)], processed_merged_data['AST_per_100_poss_' + str(year1)], processed_merged_data['STL_per_100_poss_' + str(year1)], processed_merged_data['BLK_per_100_poss_' + str(year1)], processed_merged_data['TS%_' + str(year1)]))))
-predictions_for_test = results.predict(sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TRB_per_100_poss_' + str(test_year_1)], processed_merged_data_test['AST_per_100_poss_' + str(test_year_1)], processed_merged_data_test['STL_per_100_poss_' + str(test_year_1)], processed_merged_data_test['BLK_per_100_poss_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)]))))
-print("RMSE for training data:", rmse(processed_merged_data['TS%_' + str(year2)], predictions_for_train))
+predictions_for_train = results.predict(explanatory_variables_train)
+predictions_for_test = results.predict(explanatory_variables_test)
+print("RMSE for training data:", rmse(processed_merged_data_train['TS%_' + str(year2)], predictions_for_train))
 print("RMSE for testing data:", rmse(processed_merged_data_test['TS%_' + str(test_year_2)], predictions_for_test))
 
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(processed_merged_data[xlabel], processed_merged_data[ylabel])
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(processed_merged_data_train[xlabel], processed_merged_data_train[ylabel])
 print("r_value: ", r_value)
 print("r_squared_value: ", r_value ** 2)
 
-processed_merged_data.plot(x=xlabel, y=ylabel, style='o')
+processed_merged_data_train.plot(x=xlabel, y=ylabel, style='o')
 plt.xlabel(xlabel)
 plt.ylabel(ylabel)
-plt.show()
+# plt.show()
+
+
 
