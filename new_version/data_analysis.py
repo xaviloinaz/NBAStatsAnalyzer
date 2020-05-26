@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import csv
 import pickle
 import os
 import matplotlib.pyplot as plt
@@ -67,47 +68,148 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
     return filtered_by_FG
 
 
-year1 = 2016
-year2 = 2017
-processed_merged_data_train = merged_years_setup(year1, year2, 200, 200)
+# Remember that the inputted first and last year are inclusive
+def produce_model_data(first_year, last_year):
 
-test_year_1 = 2019
-test_year_2 = 2020
-processed_merged_data_test = merged_years_setup(test_year_1, test_year_2, 200, 150)
 
-print(processed_merged_data_train.head(10))
-print("shape of data: ", processed_merged_data_train.shape)
-print("Number of players: ", processed_merged_data_train.shape[0])
-print("Number of attributes: ", processed_merged_data_train.shape[1])
+    labels_row = ["Explanatory Season", "Prediction Season", "Number of Players (Sample Size)", "R^2 using Model", "R^2 using just TS%", "Training Error (RMSE) using Model", "Training Error (RMSE) using just TS%"]
 
-xlabel = 'TS%_' + str(year1)
-ylabel = 'TS%_' + str(year2)
+    for y in range(first_year, last_year):
+        lbl = "Testing Error (RMSE) using Model for Seasons " + str(y) + " & " + str(y+1)
+        labels_row.append(lbl)
 
-# explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['2P%_totals_' + str(year1)], processed_merged_data_train['FT%_totals_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
-# explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['FT%_totals_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+    data_rows = []
 
+    for year in range(first_year, last_year):
+
+        row_list_to_write = []
+
+        MIN_FG_EACH_SEASON = 200
+        year1 = year
+        year2 = year+1
+        processed_merged_data_train = merged_years_setup(year1, year2, MIN_FG_EACH_SEASON, MIN_FG_EACH_SEASON)
+
+        print(processed_merged_data_train.head(10))
+        print("shape of data: ", processed_merged_data_train.shape)
+        num_players = processed_merged_data_train.shape[0]
+        print("Number of players: ", num_players)
+        print("Number of attributes: ", processed_merged_data_train.shape[1])
+
+        explanatory_variables_train = sm.add_constant(np.column_stack((
+                                                                      processed_merged_data_train['3PAr_' + str(year1)],
+                                                                      processed_merged_data_train['FTr_' + str(year1)],
+                                                                      processed_merged_data_train['TS%_' + str(year1)])))
+
+        model = sm.OLS(processed_merged_data_train['TS%_' + str(year2)], explanatory_variables_train)
+        results = model.fit()
+        model_rsquared = results.rsquared
+        print("Summary:")
+        print(results.summary())
+
+        predictions_for_train = results.predict(explanatory_variables_train)
+
+        explanatory_variable_basic_TS = sm.add_constant(np.column_stack((
+                                                                      processed_merged_data_train['3PAr_' + str(year1)],
+                                                                      processed_merged_data_train['FTr_' + str(year1)],
+                                                                      processed_merged_data_train['TS%_' + str(year1)])))
+
+        predictions_basic_TS_model = results.predict(explanatory_variable_basic_TS)
+
+        rmse_value_training = rmse(processed_merged_data_train['TS%_' + str(year2)], predictions_for_train)
+        print("RMSE for training data:", rmse_value_training)
+        rmse_value_TS = rmse(processed_merged_data_train['TS%_' + str(year2)], predictions_basic_TS_model)
+
+        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(processed_merged_data_train['TS%_' + str(year1)],
+                                                                             processed_merged_data_train['TS%_' + str(year2)])
+
+        print("r_value: ", r_value)
+        r_squared_just_TS = r_value ** 2
+        print("r_squared_value: ", r_squared_just_TS)
+
+        row_list_to_write += [year1, year2, num_players, round(model_rsquared, 3), round(r_squared_just_TS, 3), round(rmse_value_training, 15), round(rmse_value_TS, 15)]
+
+        for test_year in range(first_year, last_year):
+
+            test_year_1 = test_year
+            test_year_2 = test_year+1
+
+            processed_merged_data_test = merged_years_setup(test_year_1, test_year_2, MIN_FG_EACH_SEASON,
+                                                            MIN_FG_EACH_SEASON)
+
+            explanatory_variables_test = sm.add_constant(np.column_stack((processed_merged_data_test[
+                                                                              '3PAr_' + str(test_year_1)],
+                                                                          processed_merged_data_test[
+                                                                              'FTr_' + str(test_year_1)],
+                                                                          processed_merged_data_test[
+                                                                              'TS%_' + str(test_year_1)])))
+
+            predictions_for_test = results.predict(explanatory_variables_test)
+
+            rmse_value_test = rmse(processed_merged_data_test['TS%_' + str(test_year_2)], predictions_for_test)
+
+            row_list_to_write.append(round(rmse_value_test, 4))
+
+
+        data_rows.append(row_list_to_write)
+
+    print(os.getcwd())
+    os.chdir("/Users/xaviloinaz/Desktop/Coding/Python/BasketballStatsAnalysis/new_version")
+    with open('the_data.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(labels_row)
+        for drow in data_rows:
+            writer.writerow(drow)
+
+    print("data_rows:")
+    print(data_rows)
+
+
+produce_model_data(2013, 2020)
+
+
+
+
+# year1 = model_explanatory_season
+# year2 = model_prediction_season
+# processed_merged_data_train = merged_years_setup(year1, year2, MIN_FG_EACH_SEASON, MIN_FG_EACH_SEASON)
+#
+# test_year_1 = 2018
+# test_year_2 = 2019
+# processed_merged_data_test = merged_years_setup(test_year_1, test_year_2, MIN_FG_EACH_SEASON, MIN_FG_EACH_SEASON)
+#
+# print(processed_merged_data_train.head(10))
+# print("shape of data: ", processed_merged_data_train.shape)
+# print("Number of players: ", processed_merged_data_train.shape[0])
+# print("Number of attributes: ", processed_merged_data_train.shape[1])
+#
+# xlabel = 'TS%_' + str(year1)
+# ylabel = 'TS%_' + str(year2)
+#
+# # explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['2P%_totals_' + str(year1)], processed_merged_data_train['FT%_totals_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+# # explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['FT%_totals_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+#
 # explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
 # explanatory_variables_test = sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)])))
-explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['TRB_per_100_poss_' + str(year1)], processed_merged_data_train['AST_per_100_poss_' + str(year1)], processed_merged_data_train['STL_per_100_poss_' + str(year1)], processed_merged_data_train['BLK_per_100_poss_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
-explanatory_variables_test = sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TRB_per_100_poss_' + str(test_year_1)], processed_merged_data_test['AST_per_100_poss_' + str(test_year_1)], processed_merged_data_test['STL_per_100_poss_' + str(test_year_1)], processed_merged_data_test['BLK_per_100_poss_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)])))
-
-model = sm.OLS(processed_merged_data_train['TS%_' + str(year2)], explanatory_variables_train)
-results = model.fit()
-print("Summary:")
-print(results.summary())
-
-predictions_for_train = results.predict(explanatory_variables_train)
-predictions_for_test = results.predict(explanatory_variables_test)
-print("RMSE for training data:", rmse(processed_merged_data_train['TS%_' + str(year2)], predictions_for_train))
-print("RMSE for testing data:", rmse(processed_merged_data_test['TS%_' + str(test_year_2)], predictions_for_test))
-
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(processed_merged_data_train[xlabel], processed_merged_data_train[ylabel])
-print("r_value: ", r_value)
-print("r_squared_value: ", r_value ** 2)
-
-processed_merged_data_train.plot(x=xlabel, y=ylabel, style='o')
-plt.xlabel(xlabel)
-plt.ylabel(ylabel)
+# # explanatory_variables_train = sm.add_constant(np.column_stack((processed_merged_data_train['3PAr_' + str(year1)], processed_merged_data_train['FTr_' + str(year1)], processed_merged_data_train['TRB_per_100_poss_' + str(year1)], processed_merged_data_train['AST_per_100_poss_' + str(year1)], processed_merged_data_train['STL_per_100_poss_' + str(year1)], processed_merged_data_train['BLK_per_100_poss_' + str(year1)], processed_merged_data_train['TS%_' + str(year1)])))
+# # explanatory_variables_test = sm.add_constant(np.column_stack((processed_merged_data_test['3PAr_' + str(test_year_1)], processed_merged_data_test['FTr_' + str(test_year_1)], processed_merged_data_test['TRB_per_100_poss_' + str(test_year_1)], processed_merged_data_test['AST_per_100_poss_' + str(test_year_1)], processed_merged_data_test['STL_per_100_poss_' + str(test_year_1)], processed_merged_data_test['BLK_per_100_poss_' + str(test_year_1)], processed_merged_data_test['TS%_' + str(test_year_1)])))
+#
+# model = sm.OLS(processed_merged_data_train['TS%_' + str(year2)], explanatory_variables_train)
+# results = model.fit()
+# print("Summary:")
+# print(results.summary())
+#
+# predictions_for_train = results.predict(explanatory_variables_train)
+# predictions_for_test = results.predict(explanatory_variables_test)
+# print("RMSE for training data:", rmse(processed_merged_data_train['TS%_' + str(year2)], predictions_for_train))
+# print("RMSE for testing data:", rmse(processed_merged_data_test['TS%_' + str(test_year_2)], predictions_for_test))
+#
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(processed_merged_data_train[xlabel], processed_merged_data_train[ylabel])
+# print("r_value: ", r_value)
+# print("r_squared_value: ", r_value ** 2)
+#
+# processed_merged_data_train.plot(x=xlabel, y=ylabel, style='o')
+# plt.xlabel(xlabel)
+# plt.ylabel(ylabel)
 # plt.show()
 
 
