@@ -184,12 +184,20 @@ def produce_model_data(file_name, first_year, last_year, expl_vars):
         for drow in data_rows:
             writer.writerow(drow)
         last_row = ["" for x in range(0,len(data_rows[0])-2)]
-        last_row += [np.mean(list_of_avg_RMSE_for_model_this_year), np.mean(list_of_avg_RMSE_for_just_TS_model_this_year)]
+        total_mean_RMSE_for_model = np.mean(list_of_avg_RMSE_for_model_this_year)
+        total_mean_RMSE_for_just_TS = np.mean(list_of_avg_RMSE_for_just_TS_model_this_year)
+        last_row += [total_mean_RMSE_for_model, total_mean_RMSE_for_just_TS]
         writer.writerow(last_row)
 
+    print("produce_model_data should have run successfully")
+    return _____need to return the data matrix so we can use it to determine the column labels to iterate through and find the names of the best explanatory variables to reduce RMSE. return train or test or both??
+    total_mean_RMSE_for_model, total_mean_RMSE_for_just_TS
 
-    print("data_rows:")
-    print(data_rows)
+
+
+def find_good_exp_variables(first_year, last_year):
+
+    produce_model_data("we_dont_really_care.csv", first_year, last_year, expl_vars)
 
 
 # produce_model_data("tables_produced/3PAr_FTr_TS%.csv", 2013, 2020, ['3PAr_', 'FTr_', 'TS%_'])
@@ -198,7 +206,7 @@ def produce_model_data(file_name, first_year, last_year, expl_vars):
 # produce_model_data("tables_produced/TS%.csv", 2013, 2020, ['TS%_'])
 # produce_model_data("tables_produced/TRBper100.csv", 2013, 2020, ['TRB_per_100_poss_'])
 # produce_model_data("tables_produced/BLKper100.csv", 2013, 2020, ['BLK_per_100_poss_'])
-produce_model_data("tables_produced/eFG%_FTr_FT%.csv", 2013, 2020, ['eFG%_totals_', 'FTr_', 'FT%_totals_'])
+# produce_model_data("tables_produced/eFG%_FTr_FT%.csv", 2013, 2020, ['eFG%_totals_', 'FTr_', 'FT%_totals_'])
 
 
 
