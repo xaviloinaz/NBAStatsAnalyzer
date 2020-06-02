@@ -58,6 +58,7 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
     filtered_empties[filtered_empties.columns[175:196]] = filtered_empties[filtered_empties.columns[175:196]].astype(float)
     filtered_empties[filtered_empties.columns[197:212]] = filtered_empties[filtered_empties.columns[197:212]].astype(float)
     filtered_empties[filtered_empties.columns[213:215]] = filtered_empties[filtered_empties.columns[213:215]].astype(float)
+    filtered_empties[filtered_empties.columns[217]] = filtered_empties[filtered_empties.columns[217]].astype(float)
     filtered_empties[filtered_empties.columns[219:233]] = filtered_empties[filtered_empties.columns[219:233]].astype(float)
     filtered_empties[filtered_empties.columns[234:238]] = filtered_empties[filtered_empties.columns[234:238]].astype(float)
     filtered_empties[filtered_empties.columns[239:243]] = filtered_empties[filtered_empties.columns[239:243]].astype(float)
@@ -202,13 +203,23 @@ def produce_model_data(first_year, last_year, expl_vars, file_name=None):
 def find_good_exp_variables(first_year, last_year):
     # Going to find "good" explanatory variable combinations for up to 3 variables
     possible_stats = years_stats_dict[2020].keys().tolist()
+
+    print("Originals stats:")
+    print(possible_stats)
+
+    stats_to_remove = ['playerID', 'Player', 'Pos', 'Tm', '', u'\xa0']
     for stat in possible_stats:
         if '3P%' in stat:
-            possible_stats.remove(stat)
-        elif '' == stat:
-            possible_stats.remove(stat)
-        elif '\\xa0' == stat:
-            possible_stats.remove(stat)
+            stats_to_remove.append(stat)
+            print("3P% removed")
+
+    print("stats to remove:")
+    print(stats_to_remove)
+
+    possible_stats = [x for x in possible_stats if x not in stats_to_remove]
+
+    print("Possible stats:")
+    print(possible_stats)
 
     exp_var_combos_1_var = list(map(lambda x: [x], possible_stats))
 
@@ -247,5 +258,6 @@ def find_good_exp_variables(first_year, last_year):
 # produce_model_data(2013, 2020, ['BLK_per_100_poss'], "tables_produced/BLKper100.csv")
 # produce_model_data(2013, 2020, ['eFG%_totals', 'FTr', 'FT%_totals'], "tables_produced/eFG%_FTr_FT%.csv")
 
-find_good_exp_variables(2013, 2020)
+good_exp_vars = find_good_exp_variables(2018, 2020)
+print(good_exp_vars)
 
