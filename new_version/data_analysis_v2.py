@@ -70,4 +70,6 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
     return filtered_by_FG
 
 MIN_FG_EACH_YEAR = 200
-print(merged_years_setup(2017, 2018, MIN_FG_EACH_YEAR, MIN_FG_EACH_YEAR))
+merged_years_data = merged_years_setup(2018, 2019, MIN_FG_EACH_YEAR, MIN_FG_EACH_YEAR)
+
+# Let's do an example regression here
