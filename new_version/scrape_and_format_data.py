@@ -5,14 +5,17 @@ import pandas as pd
 
 
 stats_for_each_year = []
-years = list(range(1998, 2021))
+years = list(range(1998, 2021+1))
 for year in years:
+    print("Year:", year)
+
     url_totals = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_totals.html"
     url_per_game = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_per_game.html"
     url_per_36_min = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_per_minute.html"
     url_per_100_poss = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_per_poss.html"
     url_advanced = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_advanced.html"
     url_shooting = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_shooting.html"
+    # urls = [url_totals, url_per_game, url_per_36_min, url_per_100_poss, url_advanced]
     urls = [url_totals, url_per_game, url_per_36_min, url_per_100_poss, url_advanced, url_shooting]
 
     url_index = 0
@@ -21,6 +24,8 @@ for year in years:
         soup = BeautifulSoup(response.content, 'html.parser')
 
         all_tr = soup.findAll("tr")
+        all_tr = list(filter(lambda ele: not ele.find(class_='over_header'), all_tr))
+
         header_data = all_tr[0]
         players_data = []
         player_ids = []
@@ -57,14 +62,24 @@ for year in years:
                 .join(stats_advanced, rsuffix='_advanced')\
                 .join(stats_shooting, rsuffix='_shooting')
             # Drop extraneous columns:
-            all_player_stats = all_player_stats\
-                .drop(columns=['playerID_totals', 'playerID_per_game', 'playerID_per_36_min', 'playerID_per_100_poss', 'playerID_shooting'])\
-                .drop(columns=['Player_totals', 'Player_per_game', 'Player_per_36_min', 'Player_per_100_poss', 'Player_shooting']) \
+            all_player_stats = all_player_stats \
+                .drop(columns=['playerID_totals', 'playerID_per_game', 'playerID_per_36_min', 'playerID_per_100_poss',
+                               'playerID_shooting']) \
+                .drop(columns=['Player_totals', 'Player_per_game', 'Player_per_36_min', 'Player_per_100_poss',
+                               'Player_shooting']) \
                 .drop(columns=['Pos_totals', 'Pos_per_game', 'Pos_per_36_min', 'Pos_per_100_poss', 'Pos_shooting']) \
                 .drop(columns=['Age_totals', 'Age_per_game', 'Age_per_36_min', 'Age_per_100_poss', 'Age_shooting']) \
                 .drop(columns=['Tm_totals', 'Tm_per_game', 'Tm_per_36_min', 'Tm_per_100_poss', 'Tm_shooting']) \
                 .drop(columns=['G_totals', 'G_per_game', 'G_per_36_min', 'G_per_100_poss', 'G_shooting']) \
-                .drop(columns=['GS_totals', 'GS_per_game', 'GS_per_36_min', 'GS_per_100_poss'])
+                .drop(columns=['GS_totals', 'GS_per_game', 'GS_per_36_min', 'GS_per_100_poss'])\
+                .drop(columns=['\xa0_shooting','','\xa0'])
+                # .drop(columns=['playerID_totals', 'playerID_per_game', 'playerID_per_36_min', 'playerID_per_100_poss']) \
+                # .drop(columns=['Player_totals', 'Player_per_game', 'Player_per_36_min', 'Player_per_100_poss']) \
+                # .drop(columns=['Pos_totals', 'Pos_per_game', 'Pos_per_36_min', 'Pos_per_100_poss']) \
+                # .drop(columns=['Age_totals', 'Age_per_game', 'Age_per_36_min', 'Age_per_100_poss']) \
+                # .drop(columns=['Tm_totals', 'Tm_per_game', 'Tm_per_36_min', 'Tm_per_100_poss']) \
+                # .drop(columns=['G_totals', 'G_per_game', 'G_per_36_min', 'G_per_100_poss']) \
+                # .drop(columns=['GS_totals', 'GS_per_game', 'GS_per_36_min', 'GS_per_100_poss'])
 
         url_index += 1
 
