@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 
+pd.set_option("display.max_rows", 10, "display.max_columns", None)
 
 stats_for_each_year = []
 years = list(range(1998, 2021+1))
@@ -54,6 +55,34 @@ for year in years:
             stats_advanced = pd.DataFrame(players_stats, columns=headers)
         else:
             stats_shooting = pd.DataFrame(players_stats, columns=headers)
+            stats_shooting.columns = pd.io.parsers.ParserBase({'names': stats_shooting.columns})._maybe_dedup_names(stats_shooting.columns)
+
+            stats_shooting = stats_shooting.rename(
+                columns={stats_shooting.columns[10]: stats_shooting.iloc[: ,:16].columns[10] + '_fga%',
+                         stats_shooting.columns[11]: stats_shooting.iloc[: ,:16].columns[11] + '_fga%',
+                         stats_shooting.columns[12]: stats_shooting.iloc[: ,:16].columns[12] + '_fga%',
+                         stats_shooting.columns[13]: stats_shooting.iloc[: ,:16].columns[13] + '_fga%',
+                         stats_shooting.columns[14]: stats_shooting.iloc[: ,:16].columns[14] + '_fga%',
+                         stats_shooting.columns[15]: stats_shooting.iloc[: ,:16].columns[15] + '_fga%'})
+            stats_shooting = stats_shooting.rename(
+                columns={stats_shooting.columns[17]: stats_shooting.columns[17][:-2] + '_fg%',
+                         stats_shooting.columns[18]: stats_shooting.columns[18][:-2] + '_fg%',
+                         stats_shooting.columns[19]: stats_shooting.columns[19][:-2] + '_fg%',
+                         stats_shooting.columns[20]: stats_shooting.columns[20][:-2] + '_fg%',
+                         stats_shooting.columns[21]: stats_shooting.columns[21][:-2] + '_fg%',
+                         stats_shooting.columns[22]: stats_shooting.columns[22][:-2] + '_fg%'})
+            stats_shooting = stats_shooting.rename(
+                columns={stats_shooting.columns[24]: stats_shooting.columns[24][:-2] + '_assisted',
+                         stats_shooting.columns[25]: stats_shooting.columns[25][:-2] + '_assisted'})
+            stats_shooting = stats_shooting.rename(
+                columns={stats_shooting.columns[27]: stats_shooting.columns[27] + '_dunks',
+                         stats_shooting.columns[28]: stats_shooting.columns[28] + '_dunks'})
+            stats_shooting = stats_shooting.rename(
+                columns={stats_shooting.columns[30]: stats_shooting.columns[30] + '_corner_3s',
+                         stats_shooting.columns[31]: stats_shooting.columns[31] + '_corner_3s'})
+            stats_shooting = stats_shooting.rename(
+                columns={stats_shooting.columns[33]: stats_shooting.columns[33] + '_heaves',
+                         stats_shooting.columns[34]: stats_shooting.columns[34][:-2] + '_heaves'})
 
             # Join the dataframes here
             all_player_stats = stats_totals.join(stats_per_game, lsuffix='_totals')\
@@ -72,7 +101,7 @@ for year in years:
                 .drop(columns=['Tm_totals', 'Tm_per_game', 'Tm_per_36_min', 'Tm_per_100_poss', 'Tm_shooting']) \
                 .drop(columns=['G_totals', 'G_per_game', 'G_per_36_min', 'G_per_100_poss', 'G_shooting']) \
                 .drop(columns=['GS_totals', 'GS_per_game', 'GS_per_36_min', 'GS_per_100_poss'])\
-                .drop(columns=['\xa0_shooting','','\xa0'])
+                .drop(columns=['\xa0_shooting','','\xa0','\xa0.1','\xa0.2','\xa0.3','\xa0.4','\xa0.5'])
                 # .drop(columns=['playerID_totals', 'playerID_per_game', 'playerID_per_36_min', 'playerID_per_100_poss']) \
                 # .drop(columns=['Player_totals', 'Player_per_game', 'Player_per_36_min', 'Player_per_100_poss']) \
                 # .drop(columns=['Pos_totals', 'Pos_per_game', 'Pos_per_36_min', 'Pos_per_100_poss']) \
