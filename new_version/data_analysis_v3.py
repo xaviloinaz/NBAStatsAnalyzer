@@ -2,6 +2,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from sklearn.metrics import r2_score
+
 
 years = list(range(1998,2021))
 years_stats_dict = {}
@@ -55,7 +57,13 @@ true_shooting_2020 = np.array(merged_years_2019_2020['TS%_2020'].astype(float))
 
 true_shooting_2019 = sm.add_constant(true_shooting_2019)
 est = sm.OLS(true_shooting_2020, true_shooting_2019).fit()
-print(est.summary())
+print("R-squared:", est.rsquared)
+print("true_shooting_2019:")
+print(true_shooting_2019)
+print("true_shooting_2020:")
+print(true_shooting_2020)
+print("R-squared without OLS:", r2_score(true_shooting_2020, true_shooting_2019[:,1]))
+# print(est.summary())
 
 shot_0_to_3_2019 = np.expand_dims(np.array(merged_years_2019_2020['0-3_fga%_2019'].astype(float)),axis=1)
 shot_3_to_10_2019 = np.expand_dims(np.array(merged_years_2019_2020['3-10_fga%_2019'].astype(float)),axis=1)
@@ -66,12 +74,14 @@ shot_3pt_2019 = np.expand_dims(np.array(merged_years_2019_2020['3P_fga%_2019'].a
 shooting_data_2019 = np.hstack((shot_0_to_3_2019,shot_3_to_10_2019,shot_10_to_16_2019,shot_16_to_3pt_2019,shot_3pt_2019))
 shooting_data_2019 = sm.add_constant(shooting_data_2019)
 est = sm.OLS(true_shooting_2020, shooting_data_2019).fit()
-print(est.summary())
+print("R-squared:", est.rsquared)
+# print(est.summary())
 
 all_shooting_data_2019 = np.hstack((true_shooting_2019,shot_0_to_3_2019,shot_3_to_10_2019,shot_10_to_16_2019,shot_16_to_3pt_2019,shot_3pt_2019))
 all_shooting_data_2019 = sm.add_constant(all_shooting_data_2019)
 est = sm.OLS(true_shooting_2020, all_shooting_data_2019).fit()
-print(est.summary())
+print("R-squared:", est.rsquared)
+# print(est.summary())
 
 
 # X_train = sm.add_constant(X_train)
@@ -80,3 +90,5 @@ print(est.summary())
 # print(est.summary())
 # y_train_pred = est.predict(X_train)
 # y_test_pred = est.predict(X_test)
+
+

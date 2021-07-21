@@ -1,0 +1,5 @@
+Explanatory Season,Prediction Season,Number of Players (Sample Size),R^2 using Model,R^2 using just TS%,Training Error (RMSE) using Model,Training Error (RMSE) using just TS%,Testing Error (RMSE) using Model for Seasons 2017 & 2018,Testing Error (RMSE) using Model for Seasons 2018 & 2019,Testing Error (RMSE) using Model for Seasons 2019 & 2020,Testing Error (RMSE) using just TS% for Seasons 2017 & 2018,Testing Error (RMSE) using just TS% for Seasons 2018 & 2019,Testing Error (RMSE) using just TS% for Seasons 2019 & 2020,Average Testing Error (RMSE) using Model,Average Testing Error (RMSE) using just TS%
+2017,2018,148,0.454,0.454,0.0283,0.0283,0.0283,0.0312,0.0316,0.0283,0.0312,0.0316,0.0314,0.030071428571428575
+2018,2019,151,0.485,0.485,0.0306,0.0306,0.0291,0.0306,0.0324,0.0291,0.0306,0.0324,0.0315,0.030685714285714285
+2019,2020,120,0.399,0.399,0.0315,0.0315,0.0285,0.0315,0.0315,0.0285,0.0315,0.0315,0.0315,0.030642857142857142
+,,,,,,,,,,,,,0.031466666666666664,0.030466666666666666
