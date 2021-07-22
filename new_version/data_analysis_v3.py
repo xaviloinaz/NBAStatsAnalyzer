@@ -52,14 +52,21 @@ def merged_years_setup(year1, year2, minFG_year1, minFG_year2): # The input year
 
 merged_years_2019_2020 = merged_years_setup(2019,2020,200,200)
 
+print(merged_years_2019_2020)
+
 true_shooting_2019 = np.array(merged_years_2019_2020['TS%_2019'].astype(float))
 true_shooting_2020 = np.array(merged_years_2019_2020['TS%_2020'].astype(float))
 
 true_shooting_2019 = sm.add_constant(true_shooting_2019)
 est = sm.OLS(true_shooting_2020, true_shooting_2019).fit()
+print("Regression just using previous year's true shooting percentage:")
 print("R-squared:", est.rsquared)
+print("R:", np.sqrt(est.rsquared))
 print("R-squared without OLS (like just R^2 year-to-year of true shooting percentages:", r2_score(true_shooting_2020, true_shooting_2019[:,1]))
+print("R without OLS (like just R^2 year-to-year of true shooting percentages:", np.sqrt(r2_score(true_shooting_2020, true_shooting_2019[:,1])))
 # print(est.summary())
+
+print()
 
 shot_0_to_3_2019 = np.expand_dims(np.array(merged_years_2019_2020['0-3_fga%_2019'].astype(float)),axis=1)
 shot_3_to_10_2019 = np.expand_dims(np.array(merged_years_2019_2020['3-10_fga%_2019'].astype(float)),axis=1)
@@ -67,17 +74,51 @@ shot_10_to_16_2019 = np.expand_dims(np.array(merged_years_2019_2020['10-16_fga%_
 shot_16_to_3pt_2019 = np.expand_dims(np.array(merged_years_2019_2020['16-3P_fga%_2019'].astype(float)),axis=1)
 shot_3pt_2019 = np.expand_dims(np.array(merged_years_2019_2020['3P_fga%_2019'].astype(float)),axis=1)
 
+
 shooting_data_2019 = np.hstack((shot_0_to_3_2019,shot_3_to_10_2019,shot_10_to_16_2019,shot_16_to_3pt_2019,shot_3pt_2019))
 shooting_data_2019 = sm.add_constant(shooting_data_2019)
 est = sm.OLS(true_shooting_2020, shooting_data_2019).fit()
+print("Regression just using basic shot range information:")
 print("R-squared:", est.rsquared)
+print("R:", np.sqrt(est.rsquared))
 # print(est.summary())
 
 all_shooting_data_2019 = np.hstack((true_shooting_2019,shot_0_to_3_2019,shot_3_to_10_2019,shot_10_to_16_2019,shot_16_to_3pt_2019,shot_3pt_2019))
 all_shooting_data_2019 = sm.add_constant(all_shooting_data_2019)
 est = sm.OLS(true_shooting_2020, all_shooting_data_2019).fit()
+print("Multiple linear regression using previous year's true shooting percentage and shot range information:")
 print("R-squared:", est.rsquared)
+print("R:", np.sqrt(est.rsquared))
 # print(est.summary())
+
+print()
+
+
+
+shot_FG_percent_0_to_3_2019 = np.expand_dims(np.array(merged_years_2019_2020['0-3_fg%_2019'].astype(float)),axis=1)
+shot_FG_percent_3_to_10_2019 = np.expand_dims(np.array(merged_years_2019_2020['3-10_fg%_2019'].astype(float)),axis=1)
+shot_FG_percent_10_to_16_2019 = np.expand_dims(np.array(merged_years_2019_2020['10-16_fg%_2019'].astype(float)),axis=1)
+shot_FG_percent_16_to_3pt_2019 = np.expand_dims(np.array(merged_years_2019_2020['16-3P_fg%_2019'].astype(float)),axis=1)
+shot_FG_percent_3pt_2019 = np.expand_dims(np.array(merged_years_2019_2020['3P_fg%_2019'].astype(float)),axis=1)
+
+
+
+shooting_data_2019 = np.hstack((shot_0_to_3_2019,shot_3_to_10_2019,shot_10_to_16_2019,shot_16_to_3pt_2019,shot_3pt_2019,shot_FG_percent_0_to_3_2019,shot_FG_percent_3_to_10_2019,shot_FG_percent_10_to_16_2019,shot_FG_percent_16_to_3pt_2019,shot_FG_percent_3pt_2019))
+shooting_data_2019 = sm.add_constant(shooting_data_2019)
+est = sm.OLS(true_shooting_2020, shooting_data_2019).fit()
+print("Regression using basic shot range information and field goal percentage at ranges:")
+print("R-squared:", est.rsquared)
+print("R:", np.sqrt(est.rsquared))
+# print(est.summary())
+
+all_shooting_data_2019 = np.hstack((true_shooting_2019,shot_0_to_3_2019,shot_3_to_10_2019,shot_10_to_16_2019,shot_16_to_3pt_2019,shot_3pt_2019,shot_FG_percent_0_to_3_2019,shot_FG_percent_3_to_10_2019,shot_FG_percent_10_to_16_2019,shot_FG_percent_16_to_3pt_2019,shot_FG_percent_3pt_2019))
+all_shooting_data_2019 = sm.add_constant(all_shooting_data_2019)
+est = sm.OLS(true_shooting_2020, all_shooting_data_2019).fit()
+print("Multiple linear regression using previous year's true shooting percentage as well as shot range information and field goal percentage at ranges:")
+print("R-squared:", est.rsquared)
+print("R:", np.sqrt(est.rsquared))
+# print(est.summary())
+
 
 
 # X_train = sm.add_constant(X_train)
@@ -86,5 +127,3 @@ print("R-squared:", est.rsquared)
 # print(est.summary())
 # y_train_pred = est.predict(X_train)
 # y_test_pred = est.predict(X_test)
-
-
